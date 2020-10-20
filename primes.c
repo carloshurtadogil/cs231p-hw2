@@ -1,4 +1,4 @@
-#include <stdio.h> //remove if not using.
+#include <stdio.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -6,11 +6,15 @@
 #include "util.h" //implementing
 
 #define BATCH_SIZE 50
+
 unsigned int current_candidate_prime;
 pthread_mutex_t lock;
 unsigned int max_num;
 bool verbosity;
-
+/**
+ * Checks if the given number is prime using a naive approach.
+ * @param[in] num The number of which to check the primality.
+ */
 static bool is_prime(unsigned int num)
 {
     if (num <= 3)
@@ -31,33 +35,45 @@ static bool is_prime(unsigned int num)
 void primes_st(unsigned int max, unsigned int verb)
 {
     for (int i = 0; i < max; ++i)
-        if (is_prime(i))
-            if (verb != 0)
-                printf("%d\n", i);
-    return;
+        if (is_prime(i) && verb != 0)
+            printf("%d\n", i);
 }
 
+/**
+ * Gets consecutive numbers to test that have not been tested.
+ * @param[in] vals Where the values will be put.
+ * @param[in] size How many values to get. 
+ */
 size_t get_test_set(unsigned int vals[], size_t size)
 {
+    size_t i = 0;
+    int start_val;
     pthread_mutex_lock(&lock);
-    size_t i;
-    for (i = 0; i < size; ++i)
+    if (current_candidate_prime <= max_num) // Still numbers left to check
     {
-        if (current_candidate_prime > max_num)
-        {
-            pthread_mutex_unlock(&lock);
-            return i;
-        }
-        vals[i] = current_candidate_prime++;
+        start_val = current_candidate_prime;   // Start with current
+        current_candidate_prime += BATCH_SIZE; // Move past this batch
+        pthread_mutex_unlock(&lock);
+        // Get the requested batch size or as many as legal
+        for (i = 0; i < size && start_val <= max_num; ++i)
+            vals[i] = start_val++;
     }
-    pthread_mutex_unlock(&lock);
+    else
+        pthread_mutex_unlock(&lock);
     return i;
 }
 
+/**
+ * Consumes BATCH_SIZE consecutive integers and tests their primalities.
+ * Takes no parameters and returns nothing. Prints the value if it is prime
+ * and verbosity is not 0. 
+ */
 void *consume_and_test(void *_)
 {
     unsigned int set[BATCH_SIZE];
     size_t actual_size = 0;
+
+    // While there is still numbers left to process
     while ((actual_size = get_test_set(set, BATCH_SIZE)) > 0)
     {
         for (int i = 0; i < actual_size; ++i)
@@ -67,6 +83,9 @@ void *consume_and_test(void *_)
                 if (verbosity != 0)
                     printf("%d\n", cur_num);
         }
+        // That was the last batch
+        if (actual_size < BATCH_SIZE)
+            break;
     }
     return NULL;
 }
