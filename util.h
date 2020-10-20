@@ -15,5 +15,5 @@ extern void primes_st(unsigned int max, unsigned int verb);
  ** utilizing @threads threads. If @verb != 0 then print
  ** the prime numbers as they are found.
  **/
-extern void primes_mt(unsigned int max, unsigned int threads,	\
-		      unsigned int verb);
+extern void primes_mt(unsigned int max, unsigned int threads,
+					  unsigned int verb);

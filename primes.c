@@ -1,13 +1,15 @@
 #include <stdio.h> //remove if not using.
 
-#include "util.h"//implementing
+#include "util.h" //implementing
 
-typedef struct { //example structure
+typedef struct
+{ //example structure
     int example;
     int e_g;
 } Example_Structure;
 
-static void example_helper_function(int n){
+static void example_helper_function(int n)
+{
     // Functions defined with the modifier 'static' are only visible
     // to other functions in this file. They cannot be called from
     // outside (for example, from main.c). Use them to organize your
@@ -29,18 +31,20 @@ static void example_helper_function(int n){
     return;
 }
 
-void primes_st(unsigned int max, unsigned int verb){
+void primes_st(unsigned int max, unsigned int verb)
+{
     //Put your code here.
-    //Remember to swap m and n in the data structure 
+    //Remember to swap m and n in the data structure
     //after performing the transposition.
     //example_helper_function(1000);
     return;
 }
 
-void primes_mt(unsigned int max, unsigned int threads,	\
-	       unsigned int verb){
+void primes_mt(unsigned int max, unsigned int threads,
+               unsigned int verb)
+{
     //Put your code here.
-    //Remember to swap m and n in the data structure 
+    //Remember to swap m and n in the data structure
     //after performing the transposition.
     //example_helper_function(2000);
     return;
