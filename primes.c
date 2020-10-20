@@ -1,51 +1,91 @@
 #include <stdio.h> //remove if not using.
+#include <pthread.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "util.h" //implementing
 
-typedef struct
-{ //example structure
-    int example;
-    int e_g;
-} Example_Structure;
+#define BATCH_SIZE 50
+unsigned int current_candidate_prime;
+pthread_mutex_t lock;
+unsigned int max_num;
+bool verbosity;
 
-static void example_helper_function(int n)
+static bool is_prime(unsigned int num)
 {
-    // Functions defined with the modifier 'static' are only visible
-    // to other functions in this file. They cannot be called from
-    // outside (for example, from main.c). Use them to organize your
-    // code. Remember that in C, you cannot use a function until you
-    // declare it, so declare all your utility functions above the
-    // point where you use them.
-    //
-    // Maintain the mat_sq_trans_xt functions as lean as possible
-    // because we are measuring their speed. Unless you are debugging,
-    // do not print anything on them, that consumes precious time.
-    //
-    // You may delete this example helper function and structure, and
-    // write your own useful ones.
+    if (num <= 3)
+        return num > 1;
+    else if (num % 2 == 0 || num % 3 == 0)
+        return false;
+    int i = 5;
 
-    Example_Structure es1;
-    es1.example = 13;
-    es1.e_g = 7;
-    printf("n = %d\n", es1.example + es1.e_g + n);
-    return;
+    while (i * i <= num)
+    {
+        if (num % i == 0 || num % (i + 2) == 0)
+            return false;
+        i += 6;
+    }
+    return true;
 }
 
 void primes_st(unsigned int max, unsigned int verb)
 {
-    //Put your code here.
-    //Remember to swap m and n in the data structure
-    //after performing the transposition.
-    //example_helper_function(1000);
+    for (int i = 0; i < max; ++i)
+        if (is_prime(i))
+            if (verb != 0)
+                printf("%d\n", i);
     return;
+}
+
+size_t get_test_set(unsigned int vals[], size_t size)
+{
+    pthread_mutex_lock(&lock);
+    size_t i;
+    for (i = 0; i < size; ++i)
+    {
+        if (current_candidate_prime > max_num)
+        {
+            pthread_mutex_unlock(&lock);
+            return i;
+        }
+        vals[i] = current_candidate_prime++;
+    }
+    pthread_mutex_unlock(&lock);
+    return i;
+}
+
+void *consume_and_test(void *_)
+{
+    unsigned int set[BATCH_SIZE];
+    size_t actual_size = 0;
+    while ((actual_size = get_test_set(set, BATCH_SIZE)) > 0)
+    {
+        for (int i = 0; i < actual_size; ++i)
+        {
+            unsigned int cur_num = set[i];
+            if (is_prime(cur_num))
+                if (verbosity != 0)
+                    printf("%d\n", cur_num);
+        }
+    }
+    return NULL;
 }
 
 void primes_mt(unsigned int max, unsigned int threads,
                unsigned int verb)
 {
-    //Put your code here.
-    //Remember to swap m and n in the data structure
-    //after performing the transposition.
-    //example_helper_function(2000);
-    return;
+    max_num = max;
+    verbosity = verb;
+    if (pthread_mutex_init(&lock, NULL) != 0)
+        pthread_exit((void *)1);
+    pthread_t thread_arr[threads];
+    for (int i = 0; i < threads; ++i)
+    {
+        if (pthread_create(&thread_arr[i], NULL, &consume_and_test, NULL) != 0)
+            pthread_exit((void *)1);
+    }
+
+    for (int i = 0; i < threads; ++i)
+        pthread_join(thread_arr[i], NULL);
+    pthread_mutex_destroy(&lock);
 }
