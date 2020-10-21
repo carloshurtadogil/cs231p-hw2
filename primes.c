@@ -79,9 +79,8 @@ void *consume_and_test(void *_)
         for (int i = 0; i < actual_size; ++i)
         {
             unsigned int cur_num = set[i];
-            if (is_prime(cur_num))
-                if (verbosity != 0)
-                    printf("%d\n", cur_num);
+            if (is_prime(cur_num) && verbosity != 0)
+                printf("%d\n", cur_num);
         }
         // That was the last batch
         if (actual_size < BATCH_SIZE)
@@ -99,10 +98,8 @@ void primes_mt(unsigned int max, unsigned int threads,
         pthread_exit((void *)1);
     pthread_t thread_arr[threads];
     for (int i = 0; i < threads; ++i)
-    {
         if (pthread_create(&thread_arr[i], NULL, &consume_and_test, NULL) != 0)
             pthread_exit((void *)1);
-    }
 
     for (int i = 0; i < threads; ++i)
         pthread_join(thread_arr[i], NULL);
