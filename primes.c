@@ -14,6 +14,7 @@ bool verbosity;
 /**
  * Checks if the given number is prime using a naive approach.
  * @param[in] num The number of which to check the primality.
+ * @return[out] Its primality.
  */
 static bool is_prime(unsigned int num)
 {
