@@ -112,6 +112,7 @@ void primes_mt(unsigned int max, unsigned int threads,
     verbosity = verb;
     if (pthread_mutex_init(&lock, NULL) != 0)
         pthread_exit((void *)1);
+    /*Create 'threads' amount of pthreads to carry out tasks*/
     pthread_t thread_arr[threads];
     for (int i = 0; i < threads; ++i)
         if (pthread_create(&thread_arr[i], NULL, &consume_and_test, NULL) != 0)
